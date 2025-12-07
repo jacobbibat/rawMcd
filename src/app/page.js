@@ -1,172 +1,116 @@
+"use client";
 
-'use client';
+import { useState } from "react";
+import Container from "@mui/material/Container";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Link from "next/link";
+import Image from "next/image";
+import logo from "@/img/logo.png"; // <-- Logo import
 
-import * as React from 'react';
+export default function Page() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [message, setMessage] = useState("");
 
-import Avatar from '@mui/material/Avatar';
+    async function handleLogin(e) {
+        e.preventDefault();
 
-import Button from '@mui/material/Button';
-
-
-import TextField from '@mui/material/TextField';
-
-import FormControlLabel from '@mui/material/FormControlLabel';
-
-import Checkbox from '@mui/material/Checkbox';
-
-import Link from '@mui/material/Link';
-
-import Container from '@mui/material/Container';
-
-import Box from '@mui/material/Box';
-
-
-
-export default function Home() {
-
-
-    const handleSubmit = (event) => {
-
-
-
-        console.log("handling submit");
-
-        event.preventDefault();
-
-        const data = new FormData(event.currentTarget);
-
-
-
-        let email = data.get('email')
-
-        let pass = data.get('pass')
-
-
-        console.log("Sent email:" + email)
-
-        console.log("Sent pass:" + pass)
-
-
-
-        runDBCallAsync(`http://localhost:3000/api/login?email=${email}&pass=${pass}`)
-
-
-
-
-
-    }; // end handle submit
-
-
-    async function runDBCallAsync(url) {
-
-
-
-        const res = await fetch(url);
+        const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+        });
 
         const data = await res.json();
 
-
-
-
-        if(data.data== "valid"){
-
-            console.log("login is valid!")
-
-
-
-
-        } else {
-
-
-            console.log("not valid  ")
-
+        if (!data.success) {
+            setMessage("Invalid email or password");
+            return;
         }
 
+        setMessage("Login successful!");
+
+        setTimeout(() => {
+            if (data.role === "manager") {
+                window.location.href = "/manager";
+            } else {
+                window.location.href = "/customer/dashboard";
+            }
+        }, 800);
     }
 
-
-
-
     return (
+        <Container
+            maxWidth="xs"
+            style={{
+                padding: "30px",
+                background: "#fff",
+                borderRadius: "20px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                textAlign: "center",
+            }}
+        >
+            {/* LOGO */}
+            <Image
+                src={logo}
+                alt="McDonalds Logo"
+                width={100}
+                style={{ marginBottom: "20px" }}
+            />
 
-        <Container maxWidth="sm">
+            <h1 style={{ marginBottom: "10px", fontWeight: "bold" }}>Welcome Back</h1>
+            <p style={{ marginTop: "-5px", marginBottom: "20px", opacity: 0.7 }}>
+                Login to continue your order 🍔
+            </p>
 
-            <Box sx={{ height: '100vh' }} >
+            <form onSubmit={handleLogin}>
+                <TextField
+                    fullWidth
+                    margin="normal"
+                    type="email"
+                    label="Email"
+                    onChange={(e) => setEmail(e.target.value)}
+                />
 
+                <TextField
+                    fullWidth
+                    margin="normal"
+                    type="password"
+                    label="Password"
+                    onChange={(e) => setPassword(e.target.value)}
+                />
 
-                <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+                <Button
+                    fullWidth
+                    variant="contained"
+                    type="submit"
+                    style={{
+                        marginTop: "20px",
+                        backgroundColor: "#FFC300",
+                        color: "#000",
+                        fontWeight: "bold",
+                    }}
+                >
+                    Login
+                </Button>
 
-                    <TextField
+                {message && (
+                    <p style={{ marginTop: "15px", color: "green", fontWeight: "bold" }}>
+                        {message}
+                    </p>
+                )}
 
-                        margin="normal"
-
-                        required
-
-                        fullWidth
-
-                        id="email"
-
-                        label="Email Address"
-
-                        name="email"
-
-                        autoComplete="email"
-
-                        autoFocus
-
-                    />
-
-                    <TextField
-
-                        margin="normal"
-
-                        required
-
-                        fullWidth
-
-                        name="pass"
-
-                        label="Pass"
-
-                        type="pass"
-
-                        id="pass"
-
-                        autoComplete="current-password"
-
-                    />
-
-                    <FormControlLabel
-
-                        control={<Checkbox value="remember" color="primary" />}
-
-                        label="Remember me"
-
-                    />
-
-                    <Button
-
-                        type="submit"
-
-                        fullWidth
-
-                        variant="contained"
-
-                        sx={{ mt: 3, mb: 2 }}
-
+                <p style={{ marginTop: "15px" }}>
+                    Not registered?{" "}
+                    <Link
+                        href="/register"
+                        style={{ color: "#D62828", textDecoration: "underline" }}
                     >
-
-                        Sign In
-
-                    </Button>
-
-                </Box>
-
-            </Box>
-
+                        Create an account
+                    </Link>
+                </p>
+            </form>
         </Container>
-
-    ); // end return
-
+    );
 }
-
